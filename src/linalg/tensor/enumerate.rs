@@ -1,14 +1,15 @@
 use super::*;
 
 pub struct TensorIter<'a, const N_DIMS: usize> {
-    tensor: &'a Tensor<N_DIMS>,
-    next_idx_flat: usize,
+    data_iter: std::slice::Iter<'a, Float>,
+    dim_lens: UIntN<N_DIMS>,
     next_idx: UIntN<N_DIMS>,
 }
 
 impl<const N_DIMS: usize> Tensor<N_DIMS> {
     pub fn enumerate<'a>(&'a self) -> TensorIter<'a, N_DIMS> {
-        TensorIter { tensor: self, next_idx_flat: 0, next_idx: UIntN::zeros() }
+        let dim_lens = self.dim_lens;
+        TensorIter { data_iter: self.data.iter(), next_idx: UIntN::zeros(), dim_lens }
     }
 }
 
@@ -16,15 +17,10 @@ impl<'a, const N_DIMS: usize> Iterator for TensorIter<'a, N_DIMS> {
     type Item = (UIntN<N_DIMS>, &'a Float);
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.next_idx_flat >= self.tensor.data.len() {
-            return None;
-        }
-
-        let ret_element = &self.tensor.data[self.next_idx_flat];
+        let ret_element = self.data_iter.next()?;
         let ret_idx = self.next_idx;
 
-        self.next_idx_flat += 1;
-        self.next_idx = Tensor::increment_idx(self.next_idx, self.tensor.dim_lens);
+        self.next_idx = Tensor::increment_idx(self.next_idx, self.dim_lens);
 
         Some((ret_idx, ret_element))
     }
