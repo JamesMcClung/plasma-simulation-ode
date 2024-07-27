@@ -2,7 +2,7 @@ use crate::prelude::*;
 
 pub enum Centering<const N_DIMS: usize> {
     NodeCentered,
-    EdgeCendered,
+    EdgeCentered,
     FaceCentered,
     CellCentered,
 }
@@ -11,7 +11,7 @@ impl<const N_DIMS: usize> Centering<N_DIMS> {
     pub fn get_offset(&self, component: UInt) -> FloatN<N_DIMS> {
         match self {
             Self::NodeCentered => [0.0; N_DIMS].into(),
-            Self::EdgeCendered => {
+            Self::EdgeCentered => {
                 let mut res = [0.0; N_DIMS];
                 res[component] = 0.5;
                 res.into()
@@ -37,7 +37,7 @@ mod tests {
         assert_eq!(centering.get_offset(1), [0.0, 0.0, 0.0].into());
         assert_eq!(centering.get_offset(2), [0.0, 0.0, 0.0].into());
 
-        let centering = Centering::<3>::EdgeCendered;
+        let centering = Centering::<3>::EdgeCentered;
         assert_eq!(centering.get_offset(0), [0.5, 0.0, 0.0].into());
         assert_eq!(centering.get_offset(1), [0.0, 0.5, 0.0].into());
         assert_eq!(centering.get_offset(2), [0.0, 0.0, 0.5].into());
@@ -59,7 +59,7 @@ mod tests {
         assert_eq!(centering.get_offset(0), [0.0, 0.0].into());
         assert_eq!(centering.get_offset(1), [0.0, 0.0].into());
 
-        let centering = Centering::<2>::EdgeCendered;
+        let centering = Centering::<2>::EdgeCentered;
         assert_eq!(centering.get_offset(0), [0.5, 0.0].into());
         assert_eq!(centering.get_offset(1), [0.0, 0.5].into());
 
