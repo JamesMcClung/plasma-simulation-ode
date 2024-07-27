@@ -1,16 +1,5 @@
 use super::*;
 
-pub(super) fn increment_idx<const N_DIMS: usize>(mut idx: UIntN<N_DIMS>, dim_lens: UIntN<N_DIMS>) -> UIntN<N_DIMS> {
-    let mut inc_dim_idx = N_DIMS - 1;
-    idx[inc_dim_idx] += 1;
-    while idx[inc_dim_idx] == dim_lens[inc_dim_idx] {
-        idx[inc_dim_idx] = 0;
-        inc_dim_idx = inc_dim_idx.saturating_sub(1);
-        idx[inc_dim_idx] += 1;
-    }
-    idx
-}
-
 pub struct TensorIter<'a, const N_DIMS: usize> {
     tensor: &'a Tensor<N_DIMS>,
     next_idx_flat: usize,
@@ -35,7 +24,7 @@ impl<'a, const N_DIMS: usize> Iterator for TensorIter<'a, N_DIMS> {
         let ret_idx = self.next_idx;
 
         self.next_idx_flat += 1;
-        self.next_idx = increment_idx(self.next_idx, self.tensor.dim_lens);
+        self.next_idx = Tensor::increment_idx(self.next_idx, self.tensor.dim_lens);
 
         Some((ret_idx, ret_element))
     }

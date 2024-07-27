@@ -28,7 +28,7 @@ impl<const N_DIMS: usize> Tensor<N_DIMS> {
         self.dim_lens[dim_idx]
     }
 
-    fn flatten_idx(idx: UIntN<N_DIMS>, dim_lens: UIntN<N_DIMS>) -> UInt {
+    pub fn flatten_idx(idx: UIntN<N_DIMS>, dim_lens: UIntN<N_DIMS>) -> UInt {
         for i in 0..N_DIMS {
             assert!(idx[i] < dim_lens[i]);
         }
@@ -40,6 +40,29 @@ impl<const N_DIMS: usize> Tensor<N_DIMS> {
         }
 
         flat_idx
+    }
+
+    /// Increments the given index in a way that is consistent with incrementing the result of [Tensor::flatten_idx]:
+    /// ```
+    /// # use pso::prelude::*;
+    /// let dim_lens = UIntN::from([3, 4]);
+    /// let idx = UIntN::from([1, 3]);
+    /// let flat_idx = Tensor::flatten_idx(idx, dim_lens);
+    ///
+    /// let next_idx = Tensor::increment_idx(idx, dim_lens);
+    /// let next_flat_idx = Tensor::flatten_idx(next_idx, dim_lens);
+    /// assert_eq!(next_flat_idx, flat_idx + 1);
+    /// ```
+    /// WARNING: Silently gives the wrong result when the result would be out of bounds.
+    pub fn increment_idx(mut idx: UIntN<N_DIMS>, dim_lens: UIntN<N_DIMS>) -> UIntN<N_DIMS> {
+        let mut inc_dim_idx = N_DIMS - 1;
+        idx[inc_dim_idx] += 1;
+        while idx[inc_dim_idx] == dim_lens[inc_dim_idx] {
+            idx[inc_dim_idx] = 0;
+            inc_dim_idx = inc_dim_idx.saturating_sub(1);
+            idx[inc_dim_idx] += 1;
+        }
+        idx
     }
 }
 
