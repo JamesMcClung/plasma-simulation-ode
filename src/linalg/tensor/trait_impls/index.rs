@@ -8,6 +8,6 @@ where
 {
     type Output = Float;
     fn index(&self, index: Idx) -> &Self::Output {
-        &self.data[self.flatten_idx(index.into())]
+        &self.data[Tensor::flatten_idx(index.into(), self.dim_lens)]
     }
 }

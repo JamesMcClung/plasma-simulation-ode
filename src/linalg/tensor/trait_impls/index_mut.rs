@@ -7,7 +7,7 @@ where
     Idx: Into<UIntN<N_DIMS>>,
 {
     fn index_mut(&mut self, index: Idx) -> &mut Self::Output {
-        let index = self.flatten_idx(index.into());
+        let index = Tensor::flatten_idx(index.into(), self.dim_lens);
         &mut self.data[index]
     }
 }

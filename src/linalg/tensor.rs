@@ -28,14 +28,14 @@ impl<const N_DIMS: usize> Tensor<N_DIMS> {
         self.dim_lens[dim_idx]
     }
 
-    fn flatten_idx(&self, idx: UIntN<N_DIMS>) -> UInt {
+    fn flatten_idx(idx: UIntN<N_DIMS>, dim_lens: UIntN<N_DIMS>) -> UInt {
         for i in 0..N_DIMS {
-            assert!(idx[i] < self.dim_lens[i]);
+            assert!(idx[i] < dim_lens[i]);
         }
 
         let mut flat_idx = idx[0];
         for i in 1..N_DIMS {
-            flat_idx *= self.dim_lens[i];
+            flat_idx *= dim_lens[i];
             flat_idx += idx[i];
         }
 
