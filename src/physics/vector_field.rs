@@ -1,4 +1,5 @@
 pub mod centering;
+mod enumeration;
 mod interpolation;
 mod location_at;
 mod trait_impls;
