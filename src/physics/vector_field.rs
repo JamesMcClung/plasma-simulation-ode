@@ -1,5 +1,6 @@
 pub mod centering;
 mod interpolation;
+mod location_at;
 mod trait_impls;
 
 use centering::Centering;
