@@ -13,6 +13,7 @@ pub struct VectorField<const N_DIMS: usize> {
     grid_spacing: FloatN<N_DIMS>,
     grid_spacing_inv: FloatN<N_DIMS>,
     dim_lens: UIntN<N_DIMS>,
+    n_dims: usize,
     data: [Tensor<N_DIMS>; N_DIMS],
 }
 
@@ -29,7 +30,7 @@ impl<const N_DIMS: usize> VectorField<N_DIMS> {
         let grid_spacing_inv = 1.0 / grid_spacing;
         let data = std::array::from_fn(|_| Tensor::zeros(dim_lens));
 
-        Self { centering, lower_corner_location, dim_lens, data, grid_spacing, grid_spacing_inv }
+        Self { centering, lower_corner_location, dim_lens, data, grid_spacing, grid_spacing_inv, n_dims: N_DIMS }
     }
 
     pub fn lower_corner(&self) -> FloatN<N_DIMS> {
@@ -38,5 +39,9 @@ impl<const N_DIMS: usize> VectorField<N_DIMS> {
 
     pub fn upper_corner(&self) -> FloatN<N_DIMS> {
         self.lower_corner_location + self.grid_spacing * self.dim_lens.map(|val| val as Float)
+    }
+
+    pub fn n_dims(&self) -> usize {
+        self.n_dims
     }
 }
