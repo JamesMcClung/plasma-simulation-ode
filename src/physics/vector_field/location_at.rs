@@ -1,8 +1,18 @@
 use super::*;
 
 impl<const N_DIMS: usize> VectorField<N_DIMS> {
+    pub(super) fn location_at_impl(
+        component_idx: usize, //
+        grid_idx: UIntN<N_DIMS>,
+        lower_corner_location: FloatN<N_DIMS>,
+        grid_spacing: FloatN<N_DIMS>,
+        centering: Centering<N_DIMS>,
+    ) -> FloatN<N_DIMS> {
+        lower_corner_location + grid_spacing * (grid_idx.map(|val| val as Float) + centering.get_offset(component_idx))
+    }
+
     pub fn location_at(&self, component_idx: usize, grid_idx: impl Into<UIntN<N_DIMS>>) -> FloatN<N_DIMS> {
-        self.lower_corner_location + self.grid_spacing * (grid_idx.into().map(|val| val as Float) + self.centering.get_offset(component_idx))
+        Self::location_at_impl(component_idx, grid_idx.into(), self.lower_corner_location, self.grid_spacing, self.centering)
     }
 }
 
