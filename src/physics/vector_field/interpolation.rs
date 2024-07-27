@@ -1,0 +1,210 @@
+use super::*;
+
+impl<const LEN: usize> VectorField<LEN> {
+    fn interpolate_component_impl<const N_WEIGHTS: usize>(
+        &self,
+        component_idx: UInt,
+        location: FloatN<LEN>, //
+        mut split_weights: [Float; N_WEIGHTS],
+        mut split_idxs: [UIntN<LEN>; N_WEIGHTS],
+    ) -> Float {
+        let idx = (location - self.lower_corner_location) * self.grid_spacing_inv - self.centering.get_offset(component_idx);
+        for i in idx {
+            // casting a negative float to an unsized int silently yields 0,
+            // so we have to manually check
+            assert!(i >= 0.0);
+        }
+        let idx_fract = idx.map(Float::fract);
+        let idx = idx.map(|i| i.trunc() as UInt);
+
+        let field_component = &self.data[component_idx];
+
+        let axis_idxs: [(UInt, UInt); LEN] = std::array::from_fn(|i| (idx[i], idx[i] + 1));
+        let axis_weights: [(Float, Float); LEN] = std::array::from_fn(|i| (1.0 - idx_fract[i], idx_fract[i]));
+
+        split_weights[0] = 1.0;
+        split_idxs[0] = idx;
+
+        for dim_to_split in 0..LEN {
+            let prev_end_idx = 1 << dim_to_split;
+            for i in 0..prev_end_idx {
+                split_weights[prev_end_idx + i] = split_weights[i] * axis_weights[dim_to_split].1;
+                split_weights[i] *= axis_weights[dim_to_split].0;
+
+                split_idxs[prev_end_idx + i] = split_idxs[i];
+                split_idxs[prev_end_idx + i][dim_to_split] = axis_idxs[dim_to_split].1;
+                split_idxs[i][dim_to_split] = axis_idxs[dim_to_split].0;
+            }
+        }
+
+        split_idxs //
+            .into_iter()
+            .zip(split_weights.into_iter())
+            .filter(|(_, weight)| *weight != 0.0)
+            .map(|(idx, weight)| field_component[idx] * weight)
+            .sum()
+    }
+}
+
+macro_rules! impl_interpolate {
+    ($n_dims:literal) => {
+        impl VectorField<$n_dims> {
+            pub fn interpolate_component(&self, component_idx: UInt, location: impl Into<FloatN<$n_dims>>) -> Float {
+                let location = location.into();
+                let split_weights = [0.0; 1 << $n_dims];
+                let split_idxs = [UIntN::<$n_dims>::zeros(); 1 << $n_dims];
+                self.interpolate_component_impl(component_idx, location, split_weights, split_idxs)
+            }
+
+            pub fn interpolate(&self, location: impl Into<FloatN<$n_dims>>) -> FloatN<$n_dims> {
+                let location = location.into();
+                FloatN::from_fn(|i| self.interpolate_component(i, location))
+            }
+        }
+    };
+}
+
+impl_interpolate!(1);
+impl_interpolate!(2);
+impl_interpolate!(3);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn interpolate_1d() {
+        let dim_lens = [4];
+        let mut field = VectorField::new(Centering::NodeCentered, dim_lens, [0.0], [1.0]);
+        for i in 0..dim_lens[0] {
+            field[(0, [i])] = i as Float;
+        }
+
+        assert_eq!(field.interpolate([1.0]), [1.0].into());
+        assert_eq!(field.interpolate([1.25]), [1.25].into());
+        assert_eq!(field.interpolate([1.5]), [1.5].into());
+        assert_eq!(field.interpolate([1.75]), [1.75].into());
+        assert_eq!(field.interpolate([2.0]), [2.0].into());
+    }
+
+    #[test]
+    fn interpolate_edge() {
+        let dim_lens = [3];
+        let mut field = VectorField::new(Centering::NodeCentered, dim_lens, [0.0], [1.0]);
+        for i in 0..dim_lens[0] {
+            field[(0, [i])] = i as Float;
+        }
+
+        assert_eq!(field.interpolate([0.0]), [0.0].into());
+        assert_eq!(field.interpolate([2.0]), [2.0].into());
+    }
+
+    #[should_panic]
+    #[test]
+    fn interpolate_out_of_bounds_below() {
+        let dim_lens = [4];
+        let field = VectorField::new(Centering::NodeCentered, dim_lens, [0.0], [1.0]);
+
+        dbg!(field.interpolate([-0.5]));
+    }
+
+    #[should_panic]
+    #[test]
+    fn interpolate_out_of_bounds_above() {
+        let dim_lens = [4];
+        let field = VectorField::new(Centering::NodeCentered, dim_lens, [0.0], [1.0]);
+
+        field.interpolate([3.5]);
+    }
+
+    #[test]
+    fn interpolate_2d() {
+        let dim_lens = [2, 4];
+        let mut field = VectorField::new(Centering::NodeCentered, dim_lens, [0.0, 0.0], [1.0, 1.0]);
+        for i in 0..dim_lens[0] {
+            for j in 0..dim_lens[1] {
+                field[(0, [i, j])] = (i * dim_lens[1] + j) as Float;
+                field[(1, [i, j])] = (j * dim_lens[0] + i) as Float;
+            }
+        }
+
+        // component 0 should be:
+        // 0 1 2 3
+        // 4 5 6 7
+        // component 1 should be:
+        // 0 2 4 6
+        // 1 3 5 7
+
+        // across edge 1
+        assert_eq!(field.interpolate([0.0, 1.0]), [1.0, 2.0].into());
+        assert_eq!(field.interpolate([0.25, 1.0]), [2.0, 2.25].into());
+        assert_eq!(field.interpolate([0.5, 1.0]), [3.0, 2.5].into());
+        assert_eq!(field.interpolate([1.0, 1.0]), [5.0, 3.0].into());
+
+        // across edge 2
+        assert_eq!(field.interpolate([0.0, 1.0]), [1.0, 2.0].into());
+        assert_eq!(field.interpolate([0.0, 1.25]), [1.25, 2.5].into());
+        assert_eq!(field.interpolate([0.0, 1.5]), [1.5, 3.0].into());
+        assert_eq!(field.interpolate([0.0, 2.0]), [2.0, 4.0].into());
+
+        // across center
+        assert_eq!(field.interpolate([0.0, 1.0]), [1.0, 2.0].into());
+        assert_eq!(field.interpolate([0.25, 1.25]), [2.25, 2.75].into());
+        assert_eq!(field.interpolate([0.5, 1.5]), [3.5, 3.5].into());
+        assert_eq!(field.interpolate([1.0, 2.0]), [6.0, 5.0].into());
+    }
+
+    #[test]
+    fn interpolate_shifted_corner() {
+        let dim_lens = [4];
+        let mut field = VectorField::new(Centering::NodeCentered, dim_lens, [5.0], [1.0]);
+        for i in 0..dim_lens[0] {
+            field[(0, [i])] = i as Float;
+        }
+
+        assert_eq!(field.interpolate([5.0]), [0.0].into());
+        assert_eq!(field.interpolate([6.5]), [1.5].into());
+    }
+
+    #[test]
+    fn interpolate_shifted_corner_negative() {
+        let dim_lens = [4];
+        let mut field = VectorField::new(Centering::NodeCentered, dim_lens, [-1.0], [1.0]);
+        for i in 0..dim_lens[0] {
+            field[(0, [i])] = i as Float;
+        }
+
+        assert_eq!(field.interpolate([-1.0]), [0.0].into());
+        assert_eq!(field.interpolate([-0.75]), [0.25].into());
+        assert_eq!(field.interpolate([-0.5]), [0.5].into());
+        assert_eq!(field.interpolate([-0.25]), [0.75].into());
+        assert_eq!(field.interpolate([0.0]), [1.0].into());
+        assert_eq!(field.interpolate([0.25]), [1.25].into());
+    }
+
+    #[test]
+    fn interpolate_nonunit_spacing() {
+        let dim_lens = [4];
+        let mut field = VectorField::new(Centering::NodeCentered, dim_lens, [0.0], [2.0]);
+        for i in 0..dim_lens[0] {
+            field[(0, [i])] = i as Float;
+        }
+
+        assert_eq!(field.interpolate([1.0]), [0.5].into());
+        assert_eq!(field.interpolate([2.0]), [1.0].into());
+        assert_eq!(field.interpolate([2.5]), [1.25].into());
+    }
+
+    #[test]
+    fn interpolate_cc() {
+        let dim_lens = [4];
+        let mut field = VectorField::new(Centering::CellCentered, dim_lens, [0.0], [1.0]);
+        for i in 0..dim_lens[0] {
+            field[(0, [i])] = i as Float;
+        }
+
+        assert_eq!(field.interpolate([1.0]), [0.5].into());
+        assert_eq!(field.interpolate([1.25]), [0.75].into());
+        assert_eq!(field.interpolate([1.5]), [1.0].into());
+    }
+}
