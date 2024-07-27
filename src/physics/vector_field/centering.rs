@@ -1,5 +1,6 @@
 use crate::prelude::*;
 
+#[derive(Clone, Copy)]
 pub enum Centering<const N_DIMS: usize> {
     NodeCentered,
     EdgeCentered,
