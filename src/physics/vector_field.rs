@@ -1,7 +1,6 @@
 pub mod centering;
-mod index;
-mod index_mut;
 mod interpolation;
+mod trait_impls;
 
 use centering::Centering;
 

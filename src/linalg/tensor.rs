@@ -1,6 +1,4 @@
-mod debug;
-mod index;
-mod index_mut;
+mod trait_impls;
 
 use crate::prelude::*;
 
