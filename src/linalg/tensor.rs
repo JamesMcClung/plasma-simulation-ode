@@ -1,3 +1,4 @@
+mod enumerate;
 mod trait_impls;
 
 use crate::prelude::*;
