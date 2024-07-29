@@ -2,8 +2,9 @@ use std::ops::Add;
 
 use super::*;
 
-impl_binops!(Add, add, +);
+impl_vector_binop!(Add, add, +);
+impl_scalar_binop_right!(Add, add, +);
 
-impl_scalar_lop_for!(Add, add, +, Float);
-impl_scalar_lop_for!(Add, add, +, Int);
-impl_scalar_lop_for!(Add, add, +, UInt);
+impl_scalar_binop_left_for!(Add, add, +, Float);
+impl_scalar_binop_left_for!(Add, add, +, Int);
+impl_scalar_binop_left_for!(Add, add, +, UInt);

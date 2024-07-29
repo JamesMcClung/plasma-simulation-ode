@@ -5,9 +5,8 @@ mod sub;
 
 use super::*;
 
-macro_rules! impl_binops {
+macro_rules! impl_vector_binop {
     ($trait:ident, $method:ident, $symbol:tt) => {
-        // vector operation
         impl<T, const LEN: usize, U> $trait<Vector<U, LEN>> for Vector<T, LEN>
         where
             T: $trait<U>,
@@ -20,8 +19,11 @@ macro_rules! impl_binops {
                 Vector::<T::Output, LEN>(res_arr)
             }
         }
+    };
+}
 
-        // scalar right-operation
+macro_rules! impl_scalar_binop_right {
+    ($trait:ident, $method:ident, $symbol:tt) => {
         impl<T, const LEN: usize, U> $trait<U> for Vector<T, LEN>
         where
             T: $trait<U>,
@@ -40,8 +42,7 @@ macro_rules! impl_binops {
 
 // can't generically implement scalar left-operation; see
 // https://stackoverflow.com/questions/63119000/why-am-i-required-to-cover-t-in-impl-foreigntraitlocaltype-for-t-e0210
-macro_rules! impl_scalar_lop_for {
-    // scalar left-operation
+macro_rules! impl_scalar_binop_left_for {
     ($trait:ident, $method:ident, $symbol:tt, $type:tt) => {
         impl<const LEN: usize, U> $trait<Vector<U, LEN>> for $type
         where
@@ -58,5 +59,6 @@ macro_rules! impl_scalar_lop_for {
     };
 }
 
-use impl_binops;
-use impl_scalar_lop_for;
+use impl_scalar_binop_left_for;
+use impl_scalar_binop_right;
+use impl_vector_binop;
