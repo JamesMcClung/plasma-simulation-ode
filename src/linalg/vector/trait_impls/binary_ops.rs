@@ -38,4 +38,25 @@ macro_rules! impl_binops {
     };
 }
 
+// can't generically implement scalar left-operation; see
+// https://stackoverflow.com/questions/63119000/why-am-i-required-to-cover-t-in-impl-foreigntraitlocaltype-for-t-e0210
+macro_rules! impl_scalar_lop_for {
+    // scalar left-operation
+    ($trait:ident, $method:ident, $symbol:tt, $type:tt) => {
+        impl<const LEN: usize, U> $trait<Vector<U, LEN>> for $type
+        where
+            $type: $trait<U>,
+        {
+            type Output = Vector<<$type as $trait<U>>::Output, LEN>;
+
+            fn $method(self, rhs: Vector<U, LEN>) -> Self::Output {
+                let mut res_iter = rhs.into_iter().map(|rhs| self $symbol rhs);
+                let res_arr = std::array::from_fn(|_| res_iter.next().unwrap());
+                Vector::<<$type as $trait<U>>::Output, LEN>(res_arr)
+            }
+        }
+    };
+}
+
 use impl_binops;
+use impl_scalar_lop_for;
