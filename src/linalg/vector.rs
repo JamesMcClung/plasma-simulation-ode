@@ -30,6 +30,3 @@ impl<T, const LEN: usize> Vector<T, LEN> {
         self.into_iter().map(f).collect()
     }
 }
-
-trait NotVector {}
-impl<T, const LEN: usize> !NotVector for Vector<T, LEN> {}
