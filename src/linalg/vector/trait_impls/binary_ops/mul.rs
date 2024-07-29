@@ -4,20 +4,6 @@ use super::*;
 
 impl_binops!(Mul, mul, *);
 
-impl<T, const LEN: usize, U> Mul<U> for Vector<T, LEN>
-where
-    T: Mul<U>,
-    U: Copy + NotVector,
-{
-    type Output = Vector<T::Output, LEN>;
-
-    fn mul(self, rhs: U) -> Self::Output {
-        let mut res_iter = self.into_iter().map(|lhs| lhs * rhs);
-        let res_arr = std::array::from_fn(|_| res_iter.next().unwrap());
-        Vector::<T::Output, LEN>(res_arr)
-    }
-}
-
 // can't generically implement left scalar op; see
 // https://stackoverflow.com/questions/63119000/why-am-i-required-to-cover-t-in-impl-foreigntraitlocaltype-for-t-e0210
 

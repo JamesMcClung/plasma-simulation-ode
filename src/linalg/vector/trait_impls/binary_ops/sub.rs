@@ -4,20 +4,6 @@ use super::*;
 
 impl_binops!(Sub, sub, -);
 
-impl<T, const LEN: usize, U> Sub<U> for Vector<T, LEN>
-where
-    T: Sub<U>,
-    U: Copy + NotVector,
-{
-    type Output = Vector<T::Output, LEN>;
-
-    fn sub(self, rhs: U) -> Self::Output {
-        let mut res_iter = self.into_iter().map(|lhs| lhs - rhs);
-        let res_arr = std::array::from_fn(|_| res_iter.next().unwrap());
-        Vector::<T::Output, LEN>(res_arr)
-    }
-}
-
 // can't generically implement left scalar op; see
 // https://stackoverflow.com/questions/63119000/why-am-i-required-to-cover-t-in-impl-foreigntraitlocaltype-for-t-e0210
 
