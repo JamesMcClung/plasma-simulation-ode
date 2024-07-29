@@ -1,3 +1,4 @@
+mod assign_ops;
 mod binary_ops;
 mod clone;
 mod copy;
