@@ -2,18 +2,7 @@ use std::ops::Sub;
 
 use super::*;
 
-impl<T, const LEN: usize, U> Sub<Vector<U, LEN>> for Vector<T, LEN>
-where
-    T: Sub<U>,
-{
-    type Output = Vector<T::Output, LEN>;
-
-    fn sub(self, rhs: Vector<U, LEN>) -> Self::Output {
-        let mut res_iter = self.into_iter().zip(rhs.into_iter()).map(|(lhs, rhs)| lhs - rhs);
-        let res_arr = std::array::from_fn(|_| res_iter.next().unwrap());
-        Vector::<T::Output, LEN>(res_arr)
-    }
-}
+impl_binops!(Sub, sub, -);
 
 impl<T, const LEN: usize, U> Sub<U> for Vector<T, LEN>
 where

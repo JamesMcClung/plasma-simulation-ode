@@ -2,18 +2,7 @@ use std::ops::Div;
 
 use super::*;
 
-impl<T, const LEN: usize, U> Div<Vector<U, LEN>> for Vector<T, LEN>
-where
-    T: Div<U>,
-{
-    type Output = Vector<T::Output, LEN>;
-
-    fn div(self, rhs: Vector<U, LEN>) -> Self::Output {
-        let mut res_iter = self.into_iter().zip(rhs.into_iter()).map(|(lhs, rhs)| lhs / rhs);
-        let res_arr = std::array::from_fn(|_| res_iter.next().unwrap());
-        Vector::<T::Output, LEN>(res_arr)
-    }
-}
+impl_binops!(Div, div, /);
 
 impl<T, const LEN: usize, U> Div<U> for Vector<T, LEN>
 where

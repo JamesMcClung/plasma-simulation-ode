@@ -2,18 +2,7 @@ use std::ops::Add;
 
 use super::*;
 
-impl<T, const LEN: usize, U> Add<Vector<U, LEN>> for Vector<T, LEN>
-where
-    T: Add<U>,
-{
-    type Output = Vector<T::Output, LEN>;
-
-    fn add(self, rhs: Vector<U, LEN>) -> Self::Output {
-        let mut res_iter = self.into_iter().zip(rhs.into_iter()).map(|(lhs, rhs)| lhs + rhs);
-        let res_arr = std::array::from_fn(|_| res_iter.next().unwrap());
-        Vector::<T::Output, LEN>(res_arr)
-    }
-}
+impl_binops!(Add, add, +);
 
 impl<T, const LEN: usize, U> Add<U> for Vector<T, LEN>
 where
