@@ -2,12 +2,10 @@ use super::*;
 use crate::linalg::neighbors_iter::NeighborsIter;
 
 impl<const LEN: usize> VectorField<LEN> {
-    fn interpolate_component_impl<const N_WEIGHTS: usize>(
+    fn interpolate_component_impl(
         &self,
         component_idx: UInt,
         location: FloatN<LEN>, //
-        mut split_weights: [Float; N_WEIGHTS],
-        mut split_idxs: [UIntN<LEN>; N_WEIGHTS],
     ) -> Float {
         let idx = (location - self.lower_corner_location) * self.grid_spacing_inv - self.centering.get_offset(component_idx);
         for i in idx {
@@ -32,29 +30,17 @@ impl<const LEN: usize> VectorField<LEN> {
 
         res
     }
+
+    pub fn interpolate_component(&self, component_idx: UInt, location: impl Into<FloatN<LEN>>) -> Float {
+        let location = location.into();
+        self.interpolate_component_impl(component_idx, location)
+    }
+
+    pub fn interpolate(&self, location: impl Into<FloatN<LEN>>) -> FloatN<LEN> {
+        let location = location.into();
+        FloatN::from_fn(|i| self.interpolate_component(i, location))
+    }
 }
-
-macro_rules! impl_interpolate {
-    ($n_dims:literal) => {
-        impl VectorField<$n_dims> {
-            pub fn interpolate_component(&self, component_idx: UInt, location: impl Into<FloatN<$n_dims>>) -> Float {
-                let location = location.into();
-                let split_weights = [0.0; 1 << $n_dims];
-                let split_idxs = [UIntN::<$n_dims>::zeros(); 1 << $n_dims];
-                self.interpolate_component_impl(component_idx, location, split_weights, split_idxs)
-            }
-
-            pub fn interpolate(&self, location: impl Into<FloatN<$n_dims>>) -> FloatN<$n_dims> {
-                let location = location.into();
-                FloatN::from_fn(|i| self.interpolate_component(i, location))
-            }
-        }
-    };
-}
-
-impl_interpolate!(1);
-impl_interpolate!(2);
-impl_interpolate!(3);
 
 #[cfg(test)]
 mod tests {
