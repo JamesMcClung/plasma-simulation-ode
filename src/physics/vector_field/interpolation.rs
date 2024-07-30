@@ -1,11 +1,11 @@
 use super::*;
 use crate::linalg::neighbors_iter::NeighborsIter;
 
-impl<const LEN: usize> VectorField<LEN> {
+impl<const N_DIMS: usize> VectorField<N_DIMS> {
     fn interpolate_component_impl(
         &self,
         component_idx: UInt,
-        location: FloatN<LEN>, //
+        location: FloatN<N_DIMS>, //
     ) -> Float {
         let idx = (location - self.lower_corner_location) * self.grid_spacing_inv - self.centering.get_offset(component_idx);
         for i in idx {
@@ -18,7 +18,7 @@ impl<const LEN: usize> VectorField<LEN> {
 
         let field_component = &self.data[component_idx];
 
-        let axis_weights: [[Float; 2]; LEN] = std::array::from_fn(|i| [1.0 - idx_fract[i], idx_fract[i]]);
+        let axis_weights: [[Float; 2]; N_DIMS] = std::array::from_fn(|i| [1.0 - idx_fract[i], idx_fract[i]]);
 
         let mut res = 0.0;
         for neighbor in NeighborsIter::new() {
@@ -31,12 +31,12 @@ impl<const LEN: usize> VectorField<LEN> {
         res
     }
 
-    pub fn interpolate_component(&self, component_idx: UInt, location: impl Into<FloatN<LEN>>) -> Float {
+    pub fn interpolate_component(&self, component_idx: UInt, location: impl Into<FloatN<N_DIMS>>) -> Float {
         let location = location.into();
         self.interpolate_component_impl(component_idx, location)
     }
 
-    pub fn interpolate(&self, location: impl Into<FloatN<LEN>>) -> FloatN<LEN> {
+    pub fn interpolate(&self, location: impl Into<FloatN<N_DIMS>>) -> FloatN<N_DIMS> {
         let location = location.into();
         FloatN::from_fn(|i| self.interpolate_component(i, location))
     }
