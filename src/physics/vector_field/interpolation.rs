@@ -1,4 +1,5 @@
 use super::*;
+use crate::linalg::neighbors_iter::NeighborsIter;
 
 impl<const LEN: usize> VectorField<LEN> {
     fn interpolate_component_impl<const N_WEIGHTS: usize>(
@@ -19,30 +20,17 @@ impl<const LEN: usize> VectorField<LEN> {
 
         let field_component = &self.data[component_idx];
 
-        let axis_idxs: [(UInt, UInt); LEN] = std::array::from_fn(|i| (idx[i], idx[i] + 1));
-        let axis_weights: [(Float, Float); LEN] = std::array::from_fn(|i| (1.0 - idx_fract[i], idx_fract[i]));
+        let axis_weights: [[Float; 2]; LEN] = std::array::from_fn(|i| [1.0 - idx_fract[i], idx_fract[i]]);
 
-        split_weights[0] = 1.0;
-        split_idxs[0] = idx;
-
-        for dim_to_split in 0..LEN {
-            let prev_end_idx = 1 << dim_to_split;
-            for i in 0..prev_end_idx {
-                split_weights[prev_end_idx + i] = split_weights[i] * axis_weights[dim_to_split].1;
-                split_weights[i] *= axis_weights[dim_to_split].0;
-
-                split_idxs[prev_end_idx + i] = split_idxs[i];
-                split_idxs[prev_end_idx + i][dim_to_split] = axis_idxs[dim_to_split].1;
-                split_idxs[i][dim_to_split] = axis_idxs[dim_to_split].0;
+        let mut res = 0.0;
+        for neighbor in NeighborsIter::new() {
+            let weight: Float = axis_weights.iter().zip(neighbor.iter()).map(|(comp_weights, comp_idx)| comp_weights[*comp_idx]).product();
+            if weight != 0.0 {
+                res += weight * field_component[idx + neighbor];
             }
         }
 
-        split_idxs //
-            .into_iter()
-            .zip(split_weights.into_iter())
-            .filter(|(_, weight)| *weight != 0.0)
-            .map(|(idx, weight)| field_component[idx] * weight)
-            .sum()
+        res
     }
 }
 
