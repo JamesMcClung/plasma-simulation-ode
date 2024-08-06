@@ -1,5 +1,5 @@
 mod config;
 mod linalg;
-mod output;
+pub mod output;
 mod physics;
 pub mod prelude;
