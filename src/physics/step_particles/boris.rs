@@ -125,3 +125,39 @@ impl ParticleStepper for BorisStepper {
         Self::step_positions(&mut particles.positions, &particles.velocities, delta_t);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use approx::assert_relative_eq;
+
+    use centering::Centering;
+
+    use super::*;
+
+    #[test]
+    fn conserve_energy() {
+        let mut particles = ParticleList::new(ParticleSpecies::new(1.0, 1.0, 1.0));
+        particles.push([1.0, 0.0, 0.0], [0.0, 0.5, 0.0]);
+
+        let dim_lens = [5, 5, 1];
+        let corner_location = [-2.0, -2.0, 0.0];
+        let grid_spacing = [1.0; 3];
+
+        let e_field = VectorField::new(Centering::NodeCentered, dim_lens, corner_location, grid_spacing);
+
+        let mut b_field = VectorField::new(Centering::NodeCentered, dim_lens, corner_location, grid_spacing);
+        for (_, val) in b_field.enumerate_grid_mut(2) {
+            *val = 1.0;
+        }
+
+        let initial_ke = particles.kinetic_energy();
+
+        for _ in 0..100 {
+            BorisStepper::step_particles(&mut particles, &e_field, &b_field, 1.0 / 32.0);
+        }
+
+        let final_ke = particles.kinetic_energy();
+
+        assert_relative_eq!(initial_ke, final_ke);
+    }
+}
