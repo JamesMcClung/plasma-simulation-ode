@@ -1,12 +1,11 @@
 use super::*;
+use crate::linalg::neighbors_iter::NeighborsIter;
 
-impl<const LEN: usize> VectorField<LEN> {
-    fn interpolate_component_impl<const N_WEIGHTS: usize>(
+impl<const N_DIMS: usize> VectorField<N_DIMS> {
+    fn interpolate_component_impl(
         &self,
         component_idx: UInt,
-        location: FloatN<LEN>, //
-        mut split_weights: [Float; N_WEIGHTS],
-        mut split_idxs: [UIntN<LEN>; N_WEIGHTS],
+        location: FloatN<N_DIMS>, //
     ) -> Float {
         let idx = (location - self.lower_corner_location) * self.grid_spacing_inv - self.centering.get_offset(component_idx);
         for i in idx {
@@ -19,54 +18,29 @@ impl<const LEN: usize> VectorField<LEN> {
 
         let field_component = &self.data[component_idx];
 
-        let axis_idxs: [(UInt, UInt); LEN] = std::array::from_fn(|i| (idx[i], idx[i] + 1));
-        let axis_weights: [(Float, Float); LEN] = std::array::from_fn(|i| (1.0 - idx_fract[i], idx_fract[i]));
+        let axis_weights: [[Float; 2]; N_DIMS] = std::array::from_fn(|i| [1.0 - idx_fract[i], idx_fract[i]]);
 
-        split_weights[0] = 1.0;
-        split_idxs[0] = idx;
-
-        for dim_to_split in 0..LEN {
-            let prev_end_idx = 1 << dim_to_split;
-            for i in 0..prev_end_idx {
-                split_weights[prev_end_idx + i] = split_weights[i] * axis_weights[dim_to_split].1;
-                split_weights[i] *= axis_weights[dim_to_split].0;
-
-                split_idxs[prev_end_idx + i] = split_idxs[i];
-                split_idxs[prev_end_idx + i][dim_to_split] = axis_idxs[dim_to_split].1;
-                split_idxs[i][dim_to_split] = axis_idxs[dim_to_split].0;
+        let mut res = 0.0;
+        for neighbor in NeighborsIter::new() {
+            let weight: Float = axis_weights.iter().zip(neighbor.iter()).map(|(comp_weights, comp_idx)| comp_weights[*comp_idx]).product();
+            if weight != 0.0 {
+                res += weight * field_component[idx + neighbor];
             }
         }
 
-        split_idxs //
-            .into_iter()
-            .zip(split_weights.into_iter())
-            .filter(|(_, weight)| *weight != 0.0)
-            .map(|(idx, weight)| field_component[idx] * weight)
-            .sum()
+        res
+    }
+
+    pub fn interpolate_component(&self, component_idx: UInt, location: impl Into<FloatN<N_DIMS>>) -> Float {
+        let location = location.into();
+        self.interpolate_component_impl(component_idx, location)
+    }
+
+    pub fn interpolate(&self, location: impl Into<FloatN<N_DIMS>>) -> FloatN<N_DIMS> {
+        let location = location.into();
+        FloatN::from_fn(|i| self.interpolate_component(i, location))
     }
 }
-
-macro_rules! impl_interpolate {
-    ($n_dims:literal) => {
-        impl VectorField<$n_dims> {
-            pub fn interpolate_component(&self, component_idx: UInt, location: impl Into<FloatN<$n_dims>>) -> Float {
-                let location = location.into();
-                let split_weights = [0.0; 1 << $n_dims];
-                let split_idxs = [UIntN::<$n_dims>::zeros(); 1 << $n_dims];
-                self.interpolate_component_impl(component_idx, location, split_weights, split_idxs)
-            }
-
-            pub fn interpolate(&self, location: impl Into<FloatN<$n_dims>>) -> FloatN<$n_dims> {
-                let location = location.into();
-                FloatN::from_fn(|i| self.interpolate_component(i, location))
-            }
-        }
-    };
-}
-
-impl_interpolate!(1);
-impl_interpolate!(2);
-impl_interpolate!(3);
 
 #[cfg(test)]
 mod tests {

@@ -1,5 +1,3 @@
-mod tensor;
-mod vector;
-
-pub use tensor::*;
-pub use vector::*;
+pub mod neighbors_iter;
+pub mod tensor;
+pub mod vector;

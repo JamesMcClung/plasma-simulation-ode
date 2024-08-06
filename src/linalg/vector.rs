@@ -1,3 +1,5 @@
+mod cross_product;
+mod magnitude;
 mod trait_impls;
 mod zero;
 
