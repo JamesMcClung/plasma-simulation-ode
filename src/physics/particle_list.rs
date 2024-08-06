@@ -14,4 +14,9 @@ impl<const N_DIMS: usize> ParticleList<N_DIMS> {
     pub fn new(species: ParticleSpecies) -> Self {
         Self { positions: Vec::new(), velocities: Vec::new(), species }
     }
+
+    pub fn push(&mut self, position: impl Into<FloatN<N_DIMS>>, velocity: impl Into<FloatN<N_DIMS>>) {
+        self.positions.push(position.into());
+        self.velocities.push(velocity.into());
+    }
 }
