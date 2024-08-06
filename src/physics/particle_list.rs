@@ -19,4 +19,8 @@ impl<const N_DIMS: usize> ParticleList<N_DIMS> {
         self.positions.push(position.into());
         self.velocities.push(velocity.into());
     }
+
+    pub fn kinetic_energy(&self) -> Float {
+        0.5 * self.species.mass() * self.velocities.iter().map(Vector::mag2).sum::<Float>() * self.species.weight()
+    }
 }
