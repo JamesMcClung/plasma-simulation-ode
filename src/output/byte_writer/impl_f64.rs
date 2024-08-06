@@ -1,12 +1,12 @@
 use super::*;
 
 impl Writer<f64> for ByteWriter<f64> {
-    fn write<W: Write>(&self, writer: &mut W, item: &f64) -> Result<usize> {
-        writer.write(&item.to_le_bytes())
-    }
-
     fn write_prelude<W: Write>(&self, writer: &mut W) -> Result<usize> {
         writer.write(&[FLOAT_64, ID_FLOAT])
+    }
+
+    fn write<W: Write>(&self, writer: &mut W, item: &f64) -> Result<usize> {
+        writer.write(&item.to_le_bytes())
     }
 }
 
