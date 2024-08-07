@@ -1,11 +1,10 @@
 mod byte_writer;
+mod type_ids;
 
 use std::io::{Result, Write};
 
-pub const ID_FLOAT: u8 = 1;
-pub const ID_VECTOR: u8 = 2;
-
 pub use byte_writer::ByteWriter;
+use type_ids::{TypeID, TypeIDs};
 
 pub trait Writer<T> {
     fn write_prelude<W: Write>(&self, writer: &mut W) -> Result<usize>;
