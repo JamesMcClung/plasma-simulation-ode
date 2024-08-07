@@ -15,3 +15,7 @@ impl TypeID<Float> for TypeIDs<Float> {
 impl<T, const LEN: usize> TypeID<Vector<T, LEN>> for TypeIDs<Vector<T, LEN>> {
     const ID: u8 = 2;
 }
+
+impl TypeID<ParticleSpecies> for TypeIDs<ParticleSpecies> {
+    const ID: u8 = 3;
+}
