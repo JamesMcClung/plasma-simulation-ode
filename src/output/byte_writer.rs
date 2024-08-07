@@ -1,5 +1,6 @@
 mod impl_f32;
 mod impl_f64;
+mod impl_float_n;
 
 use std::io::{Result, Write};
 use std::marker::PhantomData;
