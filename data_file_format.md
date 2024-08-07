@@ -14,6 +14,7 @@ Floats are little-endian.
 |     1 | Float           |
 |     2 | Vector          |
 |     3 | ParticleSpecies |
+|     4 | ParticleList    |
 
 ## Float Format
 |   Byte Index | Possible Value | Meaning        |
@@ -33,3 +34,11 @@ Floats are little-endian.
 |    0..4 or 0..8 |          Float | Mass    |
 |   4..8 or 8..16 |          Float | Charge  |
 | 8..12 or 16..32 |          Float | Weight  |
+
+## ParticleList Format
+|       Byte Index |  Possible Value | Meaning                               |
+| ---------------: | --------------: | :------------------------------------ |
+|                0 |              u8 | Number of dimensions                  |
+|   1..13 or 1..33 | ParticleSpecies | Species of particles in list          |
+| 13..17 or 33..37 |             i32 | Number of particles                   |
+|     17.. or 37.. |          Floats | All positions and then all velocities |

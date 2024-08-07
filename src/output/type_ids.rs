@@ -31,3 +31,7 @@ impl<T, const LEN: usize> TypeID<Vector<T, LEN>> for TypeIDs<Vector<T, LEN>> {
 impl TypeID<ParticleSpecies> for TypeIDs<ParticleSpecies> {
     const ID: u8 = 3;
 }
+
+impl<const N_DIMS: usize> TypeID<ParticleList<N_DIMS>> for TypeIDs<ParticleList<N_DIMS>> {
+    const ID: u8 = 4;
+}
