@@ -8,7 +8,11 @@ pub trait TypeID<T> {
     const ID: u8;
 }
 
-impl TypeID<Float> for TypeIDs<Float> {
+impl TypeID<f32> for TypeIDs<f32> {
+    const ID: u8 = 1;
+}
+
+impl TypeID<f64> for TypeIDs<f64> {
     const ID: u8 = 1;
 }
 
