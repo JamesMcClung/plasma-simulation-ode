@@ -10,6 +10,7 @@ Floats are little-endian.
 ## TypeIDs
 | Value | Data Type       |
 | ----: | :-------------- |
+|     0 | Int             |
 |     1 | Float           |
 |     2 | Vector          |
 |     3 | ParticleSpecies |
