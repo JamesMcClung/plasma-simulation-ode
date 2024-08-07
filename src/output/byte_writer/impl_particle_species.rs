@@ -5,7 +5,7 @@ use crate::prelude::*;
 
 impl Writer<ParticleSpecies> for ByteWriter<ParticleSpecies> {
     fn write_prelude<W: Write>(&self, writer: &mut W) -> Result<usize> {
-        writer.write(&[size_of::<Float>() as u8 * 8, TypeIDs::<ParticleSpecies>::ID])
+        writer.write(&[size_of::<Float>() as u8 * 8, Self::TYPE_ID])
     }
 
     fn write<W: Write>(&self, writer: &mut W, item: &ParticleSpecies) -> Result<usize> {

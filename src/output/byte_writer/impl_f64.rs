@@ -1,11 +1,10 @@
 use std::mem::size_of;
 
 use super::*;
-use crate::prelude::*;
 
 impl Writer<f64> for ByteWriter<f64> {
     fn write_prelude<W: Write>(&self, writer: &mut W) -> Result<usize> {
-        writer.write(&[size_of::<f64>() as u8 * 8, TypeIDs::<Float>::ID])
+        writer.write(&[size_of::<f64>() as u8 * 8, Self::TYPE_ID])
     }
 
     fn write<W: Write>(&self, writer: &mut W, item: &f64) -> Result<usize> {
@@ -16,6 +15,7 @@ impl Writer<f64> for ByteWriter<f64> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::prelude::*;
 
     #[test]
     fn write_f64() {

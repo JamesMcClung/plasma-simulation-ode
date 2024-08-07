@@ -5,7 +5,7 @@ use crate::prelude::*;
 
 impl<const LEN: usize> Writer<FloatN<LEN>> for ByteWriter<FloatN<LEN>> {
     fn write_prelude<W: Write>(&self, writer: &mut W) -> Result<usize> {
-        writer.write(&[size_of::<Float>() as u8 * 8, TypeIDs::<FloatN<LEN>>::ID])
+        writer.write(&[size_of::<Float>() as u8 * 8, Self::TYPE_ID])
     }
 
     fn write<W: Write>(&self, writer: &mut W, item: &FloatN<LEN>) -> Result<usize> {
