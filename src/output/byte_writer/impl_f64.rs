@@ -1,12 +1,8 @@
 use super::*;
 
-impl Writer<f64> for ByteWriter<f64> {
-    fn write_prelude<W: Write>(&self, writer: &mut W) -> Result<usize> {
-        writer.write(&[mem::size_of::<f64>() as u8 * 8, Self::TYPE_ID])
-    }
-
-    fn write<W: Write>(&self, writer: &mut W, item: &f64) -> Result<usize> {
-        writer.write(&item.to_le_bytes())
+impl<W: Write> WriteBytes<f64> for W {
+    fn write_bytes(&mut self, item: &f64) -> Result<usize> {
+        self.write(&(*item as Float).to_le_bytes())
     }
 }
 
@@ -17,9 +13,8 @@ mod tests {
     #[test]
     fn write_f64() {
         let mut data = Vec::new();
-        let writer = ByteWriter::new();
-        writer.write_prelude(&mut data).unwrap();
-        writer.write(&mut data, &1.5_f64).unwrap();
+        data.write_prelude::<Float>().unwrap();
+        data.write_bytes(&1.5_f64).unwrap();
         assert_eq!(data, vec![64, TypeIDs::<Float>::ID, 0, 0, 0, 0, 0, 0, 0xf8, 0x3f]);
     }
 }

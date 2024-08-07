@@ -6,18 +6,22 @@ use std::mem;
 
 use crate::prelude::*;
 
-pub use byte_writer::ByteWriter;
 use type_ids::{TypeID, TypeIDs};
 
-pub trait Writer<T>
+pub trait WriteBytes<T>: Write
 where
     TypeIDs<T>: TypeID,
 {
-    const TYPE_ID: u8 = TypeIDs::<T>::ID;
-
-    fn write_prelude<W: Write>(&self, writer: &mut W) -> Result<usize> {
-        writer.write(&[mem::size_of::<Float>() as u8 * 8, Self::TYPE_ID])
-    }
-
-    fn write<W: Write>(&self, writer: &mut W, item: &T) -> Result<usize>;
+    fn write_bytes(&mut self, item: &T) -> Result<usize>;
 }
+
+pub trait WritePrelude: Write {
+    fn write_prelude<T>(&mut self) -> Result<usize>
+    where
+        TypeIDs<T>: TypeID,
+    {
+        self.write(&[mem::size_of::<Float>() as u8 * 8, TypeIDs::<T>::ID])
+    }
+}
+
+impl<W: Write> WritePrelude for W {}

@@ -7,14 +7,5 @@ mod impl_particle_list;
 mod impl_particle_species;
 
 use std::io::{Result, Write};
-use std::marker::PhantomData;
 
 use super::*;
-
-pub struct ByteWriter<T>(PhantomData<T>);
-
-impl<T> ByteWriter<T> {
-    pub fn new() -> Self {
-        Self(PhantomData)
-    }
-}

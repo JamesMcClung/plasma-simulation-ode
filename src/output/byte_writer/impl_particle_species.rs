@@ -1,13 +1,12 @@
 use super::*;
 
-impl Writer<ParticleSpecies> for ByteWriter<ParticleSpecies> {
-    fn write<W: Write>(&self, writer: &mut W, item: &ParticleSpecies) -> Result<usize> {
+impl<W: Write> WriteBytes<ParticleSpecies> for W {
+    fn write_bytes(&mut self, item: &ParticleSpecies) -> Result<usize> {
         let mut bytes_written = 0;
 
-        let float_writer = ByteWriter::new();
-        bytes_written += float_writer.write(writer, &item.mass())?;
-        bytes_written += float_writer.write(writer, &item.charge())?;
-        bytes_written += float_writer.write(writer, &item.weight())?;
+        bytes_written += self.write_bytes(&item.mass())?;
+        bytes_written += self.write_bytes(&item.charge())?;
+        bytes_written += self.write_bytes(&item.weight())?;
 
         Ok(bytes_written)
     }
@@ -31,9 +30,8 @@ mod tests {
     #[test]
     fn write_species() {
         let mut data = Vec::new();
-        let writer = ByteWriter::new();
-        writer.write_prelude(&mut data).unwrap();
-        writer.write(&mut data, &ParticleSpecies::new(1.0, 1.5, 2.0)).unwrap();
+        data.write_prelude::<ParticleSpecies>().unwrap();
+        data.write_bytes(&ParticleSpecies::new(1.0, 1.5, 2.0)).unwrap();
         assert_eq!(data, write_species_result());
     }
 }

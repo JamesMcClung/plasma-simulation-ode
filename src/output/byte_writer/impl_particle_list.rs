@@ -1,22 +1,21 @@
 use super::*;
 
-impl<const N_DIMS: usize> Writer<ParticleList<N_DIMS>> for ByteWriter<ParticleList<N_DIMS>> {
-    fn write<W: Write>(&self, writer: &mut W, item: &ParticleList<N_DIMS>) -> Result<usize> {
+impl<W: Write, const N_DIMS: usize> WriteBytes<ParticleList<N_DIMS>> for W {
+    fn write_bytes(&mut self, item: &ParticleList<N_DIMS>) -> Result<usize> {
         let mut bytes_written = 0;
 
-        bytes_written += writer.write(&[N_DIMS as u8])?;
-        bytes_written += ByteWriter::new().write(writer, &item.species)?;
-        bytes_written += ByteWriter::new().write(writer, &(item.len() as Int))?;
+        bytes_written += self.write(&[N_DIMS as u8])?;
+        bytes_written += self.write_bytes(&item.species)?;
+        bytes_written += self.write_bytes(&(item.len() as Int))?;
 
-        let float_writer = ByteWriter::new();
         for pos in item.positions.iter() {
             for val in pos.iter() {
-                bytes_written += float_writer.write(writer, val)?;
+                bytes_written += self.write_bytes(val)?;
             }
         }
         for vel in item.velocities.iter() {
             for val in vel.iter() {
-                bytes_written += float_writer.write(writer, val)?;
+                bytes_written += self.write_bytes(val)?;
             }
         }
 
@@ -57,9 +56,8 @@ mod tests {
         particles.push([2.0, 1.0], [1.5, 0.0]);
 
         let mut data = Vec::new();
-        let writer = ByteWriter::new();
-        writer.write_prelude(&mut data).unwrap();
-        writer.write(&mut data, &particles).unwrap();
+        data.write_prelude::<ParticleList<2>>().unwrap();
+        data.write_bytes(&particles).unwrap();
         assert_eq!(data, write_particle_list_2_result());
     }
 }
