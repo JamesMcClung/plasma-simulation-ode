@@ -11,7 +11,7 @@ use type_ids::{TypeID, TypeIDs};
 
 pub trait Writer<T>
 where
-    TypeIDs<T>: TypeID<T>,
+    TypeIDs<T>: TypeID,
 {
     const TYPE_ID: u8 = TypeIDs::<T>::ID;
 
