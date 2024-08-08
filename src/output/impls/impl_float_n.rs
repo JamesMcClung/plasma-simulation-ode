@@ -4,7 +4,7 @@ impl<const LEN: usize, W: Write> WriteBytes<FloatN<LEN>> for W {
     fn write_bytes(&mut self, item: &FloatN<LEN>) -> Result<usize> {
         let mut bytes_written = 0;
 
-        bytes_written += self.write(&[TypeIDs::<Float>::ID, LEN as u8])?;
+        bytes_written += self.write(&[Float::ID, LEN as u8])?;
 
         for el in item.iter() {
             bytes_written += self.write_bytes(el)?;
@@ -21,7 +21,7 @@ mod tests {
     #[rustfmt::skip]
     fn write_float_3_result() -> Vec<u8> {
         vec![
-            TypeIDs::<Float>::ID, 3, // vector header (dtype, size)
+            Float::ID, 3,                 // vector header (dtype, size)
             0, 0, 0, 0, 0, 0, 0xe0, 0x3f, // first float
             0, 0, 0, 0, 0, 0, 0   , 0   , // second float
             0, 0, 0, 0, 0, 0, 0xf0, 0x3f, // third float

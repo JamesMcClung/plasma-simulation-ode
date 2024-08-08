@@ -7,7 +7,7 @@ use std::io::{Result, Write};
 use crate::prelude::*;
 
 use primitives::{MatchPrimitives, OutputPrimitives};
-use type_ids::{TypeID, TypeIDs};
+use type_ids::TypeID;
 
 const FORMAT_VERSION_MAJOR: u8 = 0;
 const FORMAT_VERSION_MINOR: u8 = 1;
@@ -20,9 +20,6 @@ const BYTES_PER_WORD: u8 = <MatchPrimitives<Float> as OutputPrimitives>::BYTES_P
 
 const PRELUDE: [u8; 4] = [FORMAT_VERSION_MAJOR, FORMAT_VERSION_MINOR, FORMAT_VERSION_PATCH, BYTES_PER_WORD];
 
-pub trait WriteBytes<T>: Write
-where
-    TypeIDs<T>: TypeID,
-{
+pub trait WriteBytes<T: TypeID>: Write {
     fn write_bytes(&mut self, item: &T) -> Result<usize>;
 }
