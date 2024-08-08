@@ -13,8 +13,7 @@ mod tests {
     #[test]
     fn write_i64() {
         let mut data = Vec::new();
-        data.write_prelude::<i64>().unwrap();
         data.write_bytes(&18_i64).unwrap();
-        assert_eq!(data, vec![64, TypeIDs::<Int>::ID, 18, 0, 0, 0, 0, 0, 0, 0]);
+        assert_eq!(data, vec![18, 0, 0, 0, 0, 0, 0, 0]);
     }
 }

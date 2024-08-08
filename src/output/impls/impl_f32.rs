@@ -13,8 +13,7 @@ mod tests {
     #[test]
     fn write_f32() {
         let mut data = Vec::new();
-        data.write_prelude::<f32>().unwrap();
         data.write_bytes(&1.5_f32).unwrap();
-        assert_eq!(data, vec![64, TypeIDs::<Float>::ID, 0, 0, 0xc0, 0x3f]);
+        assert_eq!(data, vec![0, 0, 0xc0, 0x3f]);
     }
 }

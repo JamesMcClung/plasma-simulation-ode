@@ -26,12 +26,10 @@ impl<W: Write, const N_DIMS: usize> WriteBytes<ParticleList<N_DIMS>> for W {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::mem;
 
     #[rustfmt::skip]
     fn write_particle_list_2_result() -> Vec<u8> {
         vec![
-            mem::size_of::<Float>() as u8 * 8, TypeIDs::<ParticleList<2>>::ID, // prelude (float bits, dtype)
             2,                            // number of dimensions
             0, 0, 0, 0, 0, 0, 0xf0, 0x3f, // species mass
             0, 0, 0, 0, 0, 0, 0xf8, 0x3f, // species charge
@@ -56,7 +54,6 @@ mod tests {
         particles.push([2.0, 1.0], [1.5, 0.0]);
 
         let mut data = Vec::new();
-        data.write_prelude::<ParticleList<2>>().unwrap();
         data.write_bytes(&particles).unwrap();
         assert_eq!(data, write_particle_list_2_result());
     }

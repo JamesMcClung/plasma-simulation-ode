@@ -17,12 +17,10 @@ impl<const LEN: usize, W: Write> WriteBytes<FloatN<LEN>> for W {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::mem;
 
     #[rustfmt::skip]
     fn write_float_3_result() -> Vec<u8> {
         vec![
-            mem::size_of::<Float>() as u8 * 8, TypeIDs::<Float3>::ID, // prelude (float bits, dtype)
             TypeIDs::<Float>::ID, 3, // vector header (dtype, size)
             0, 0, 0, 0, 0, 0, 0xe0, 0x3f, // first float
             0, 0, 0, 0, 0, 0, 0   , 0   , // second float
@@ -33,7 +31,6 @@ mod tests {
     #[test]
     fn write_float_3() {
         let mut data = Vec::new();
-        data.write_prelude::<Float3>().unwrap();
         data.write_bytes(&Float3::from([0.5, 0.0, 1.0])).unwrap();
         assert_eq!(data, write_float_3_result());
     }
