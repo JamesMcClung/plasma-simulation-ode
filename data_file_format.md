@@ -19,11 +19,12 @@ The first 4 bytes specify how the file is formatted, and data starts at byte ind
 ## TypeIDs
 | Value | Data Type       |
 | ----: | :-------------- |
-|     0 | Int             |
-|     1 | Float           |
-|     2 | Vector          |
-|     3 | ParticleSpecies |
-|     4 | ParticleList    |
+|     0 | UInt            |
+|     1 | Int             |
+|     2 | Float           |
+|    10 | Vector          |
+|    20 | ParticleSpecies |
+|    30 | ParticleList    |
 
 ## Data Formats
 
