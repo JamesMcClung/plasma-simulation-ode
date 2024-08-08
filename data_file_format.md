@@ -1,11 +1,20 @@
-# Data File Format
-Floats are little-endian.
+# Data File Format 0.1.0
+The first 4 bytes specify how the file is formatted, and data starts at byte index 4. Data is stored in little-endian words.
 
-| Byte Index | Possible Value | Meaning                                                  |
-| ---------: | -------------: | :------------------------------------------------------- |
-|          0 |       32 or 64 | Number of bits per float                                 |
-|          1 |         TypeID | Type of data in file (see table)                         |
-|        2.. |         varies | Contents of file (see format of each specific data type) |
+| Byte Index | Byte Type | Meaning                  |
+| ---------: | :-------- | :----------------------- |
+|          0 | u8        | Major version of format  |
+|          1 | u8        | Minor version of format  |
+|          2 | u8        | Patch version of format  |
+|          3 | 4 or 8    | Number of bytes per word |
+|          4 | see below | Word index = 0           |
+
+|       Word Index | Word Type | Meaning        |
+| ---------------: | :-------- | :------------- |
+|                0 | TypeID    | Type of data 0 |
+|          1..N(0) | varies    | Data 0         |
+|             N(i) | TypeID    | Type of data i |
+| (N(i)+1)..N(i+1) | varies    | Data i         |
 
 ## TypeIDs
 | Value | Data Type       |
@@ -16,29 +25,26 @@ Floats are little-endian.
 |     3 | ParticleSpecies |
 |     4 | ParticleList    |
 
-## Float Format
-|   Byte Index | Possible Value | Meaning        |
-| -----------: | -------------: | :------------- |
-| 0..4 or 0..8 |          Float | Value of float |
+## Data Formats
 
-## Vector Format
-| Byte Index | Possible Value | Meaning                |
-| ---------: | -------------: | :--------------------- |
-|          0 |         TypeID | Type of data in vector |
-|          1 |             u8 | Length of vector       |
-|         2+ |      arbitrary | Data in vector         |
+### Vector
+| Word Index | Type   | Meaning                |
+| ---------: | :----- | :--------------------- |
+|          0 | TypeID | Type of data in vector |
+|          1 | Int    | Length of vector       |
+|        2.. | varies | Data in vector         |
 
-## ParticleSpecies Format
-|      Byte Index | Possible Value | Meaning |
-| --------------: | -------------: | :------ |
-|    0..4 or 0..8 |          Float | Mass    |
-|   4..8 or 8..16 |          Float | Charge  |
-| 8..12 or 16..32 |          Float | Weight  |
+### ParticleSpecies
+| Word Index | Type  | Meaning |
+| ---------: | :---- | :------ |
+|          0 | Float | Mass    |
+|          1 | Float | Charge  |
+|          2 | Float | Weight  |
 
-## ParticleList Format
-|       Byte Index |  Possible Value | Meaning                               |
-| ---------------: | --------------: | :------------------------------------ |
-|                0 |              u8 | Number of dimensions                  |
-|   1..13 or 1..33 | ParticleSpecies | Species of particles in list          |
-| 13..17 or 33..37 |             i32 | Number of particles                   |
-|     17.. or 37.. |          Floats | All positions and then all velocities |
+### ParticleList
+| Word Index | Type            | Meaning                               |
+| ---------: | :-------------- | :------------------------------------ |
+|          0 | Int             | Number of dimensions                  |
+|       1..4 | ParticleSpecies | Species of particles in list          |
+|          4 | Int             | Number of particles                   |
+|        5.. | Floats          | All positions and then all velocities |
