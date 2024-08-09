@@ -21,5 +21,5 @@ const BYTES_PER_WORD: u8 = <MatchPrimitives<Float> as OutputPrimitives>::BYTES_P
 const PRELUDE: [u8; 4] = [FORMAT_VERSION_MAJOR, FORMAT_VERSION_MINOR, FORMAT_VERSION_PATCH, BYTES_PER_WORD];
 
 pub trait WriteBytes<T: TypeID>: Write {
-    fn write_bytes(&mut self, item: &T) -> Result<usize>;
+    fn write_bytes<const BYTES_PER_WORD: u8>(&mut self, item: &T) -> Result<usize>;
 }

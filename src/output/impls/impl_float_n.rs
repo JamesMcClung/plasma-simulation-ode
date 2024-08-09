@@ -1,13 +1,13 @@
 use super::*;
 
 impl<const LEN: usize, W: Write> WriteBytes<FloatN<LEN>> for W {
-    fn write_bytes(&mut self, item: &FloatN<LEN>) -> Result<usize> {
+    fn write_bytes<const BYTES_PER_WORD: u8>(&mut self, item: &FloatN<LEN>) -> Result<usize> {
         let mut bytes_written = 0;
 
         bytes_written += self.write(&[Float::ID, LEN as u8])?;
 
         for el in item.iter() {
-            bytes_written += self.write_bytes(el)?;
+            bytes_written += self.write_bytes::<BYTES_PER_WORD>(el)?;
         }
 
         Ok(bytes_written)
@@ -31,7 +31,7 @@ mod tests {
     #[test]
     fn write_float_3() {
         let mut data = Vec::new();
-        data.write_bytes(&Float3::from([0.5, 0.0, 1.0])).unwrap();
+        data.write_bytes::<8>(&Float3::from([0.5, 0.0, 1.0])).unwrap();
         assert_eq!(data, write_float_3_result());
     }
 }
