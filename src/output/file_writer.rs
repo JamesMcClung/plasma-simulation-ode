@@ -6,16 +6,21 @@ use std::{
 
 use super::*;
 
-pub struct FileWriter<const BYTES_PER_WORD: u8 = { crate::output::BYTES_PER_WORD }> {
+pub struct FileWriter<const BYTES_PER_WORD: u8 = { std::mem::size_of::<Float>() as u8 }> {
     file: BufWriter<File>,
 }
 
 impl<const BYTES_PER_WORD: u8> FileWriter<BYTES_PER_WORD> {
-    /// Opens a file and immediately writes the [PRELUDE].
+    /// Opens a (buffered) file and immediately writes the prelude.
     pub fn create(path: impl Into<PathBuf>) -> Result<Self> {
-        let mut file = BufWriter::new(File::create(path.into())?);
-        file.write(&PRELUDE)?;
-        Ok(Self { file })
+        let file = BufWriter::new(File::create(path.into())?);
+        let mut res = Self { file };
+        res.write_prelude()?;
+        Ok(res)
+    }
+
+    fn write_prelude(&mut self) -> Result<usize> {
+        self.file.write(&[FORMAT_VERSION_MAJOR, FORMAT_VERSION_MINOR, FORMAT_VERSION_PATCH, BYTES_PER_WORD])
     }
 
     pub fn write_bytes<T: TypeID>(&mut self, item: &T) -> Result<usize>
