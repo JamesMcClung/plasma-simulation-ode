@@ -29,4 +29,8 @@ impl<const BYTES_PER_WORD: u8> FileWriter<BYTES_PER_WORD> {
     {
         self.file.write_bytes::<BYTES_PER_WORD>(item)
     }
+
+    pub fn flush(&mut self) -> Result<()> {
+        self.file.flush()
+    }
 }
