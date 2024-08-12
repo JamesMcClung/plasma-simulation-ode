@@ -4,11 +4,19 @@ pub trait TypeID {
     const ID: u8;
 }
 
+impl TypeID for u8 {
+    const ID: u8 = 0;
+}
+
 impl TypeID for u32 {
     const ID: u8 = 0;
 }
 
 impl TypeID for u64 {
+    const ID: u8 = 0;
+}
+
+impl TypeID for usize {
     const ID: u8 = 0;
 }
 
