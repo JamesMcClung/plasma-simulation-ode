@@ -36,3 +36,17 @@ impl<const BYTES_PER_WORD: u8> FileWriter<File, BYTES_PER_WORD> {
         Ok(res)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn write_prelude() {
+        let file = BufWriter::new(Vec::new());
+        let mut writer: FileWriter<_, 4> = FileWriter { file };
+        writer.write_prelude().unwrap();
+        writer.flush().unwrap();
+        assert_eq!(writer.file.get_ref(), &[FORMAT_VERSION_MAJOR, FORMAT_VERSION_MINOR, FORMAT_VERSION_PATCH, 4]);
+    }
+}
