@@ -9,9 +9,10 @@ impl<const N_DIMS: usize> VectorField<N_DIMS> {
     ) -> Float {
         let idx = (location - self.lower_corner_location) * self.grid_spacing_inv - self.centering.get_offset(component_idx);
         for i in idx {
-            // casting a negative float to an unsized int silently yields 0,
-            // so we have to manually check
-            assert!(i >= 0.0);
+            // casting a negative float to an unsized int silently yields 0, so we have to manually check
+            if i < 0.0 {
+                panic!("interpolation failed: location '{location:?}' with index '{idx:?}' is out of bounds (lower corner is at {:?}, upper corner is at {:?})", self.lower_corner(), self.upper_corner());
+            }
         }
         let idx_fract = idx.map(Float::fract);
         let idx = idx.map(|i| i.trunc() as UInt);
