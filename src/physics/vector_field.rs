@@ -4,9 +4,9 @@ mod interpolation;
 mod location_at;
 mod trait_impls;
 
-use centering::Centering;
-
 use crate::prelude::*;
+
+pub use centering::Centering;
 
 pub struct VectorField<const N_DIMS: usize> {
     centering: Centering<N_DIMS>,
