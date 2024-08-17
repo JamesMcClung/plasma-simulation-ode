@@ -4,9 +4,9 @@ mod interpolation;
 mod location_at;
 mod trait_impls;
 
-use centering::Centering;
-
 use crate::prelude::*;
+
+pub use centering::Centering;
 
 pub struct VectorField<const N_DIMS: usize> {
     centering: Centering<N_DIMS>,
@@ -38,8 +38,17 @@ impl<const N_DIMS: usize> VectorField<N_DIMS> {
         self.lower_corner_location
     }
 
+    /// The "highest" node-centered spatial coordinate within the bounds of this field's domain. Certain components may be higher if a centering other than node-centered is used.
+    /// ```
+    /// # use pso::prelude::*;
+    /// let lower_corner = [0.0, 0.0];
+    /// let dim_lens = [4, 1];
+    /// let grid_spacing = [1.0, 1.0];
+    /// let field = VectorField::new(Centering::NodeCentered, dim_lens, lower_corner, grid_spacing);
+    /// assert_eq!(field.upper_corner(), [3.0, 0.0].into());
+    /// ```
     pub fn upper_corner(&self) -> FloatN<N_DIMS> {
-        self.lower_corner_location + self.grid_spacing * self.dim_lens.map(|val| val as Float)
+        self.lower_corner_location + self.grid_spacing * self.dim_lens.map(|val| (val - 1) as Float)
     }
 
     pub fn n_dims(&self) -> usize {

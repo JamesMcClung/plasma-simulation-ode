@@ -45,7 +45,7 @@ The first 4 bytes specify how the file is formatted, and data starts at byte ind
 ### ParticleList
 | Word Index | Type            | Meaning                               |
 | ---------: | :-------------- | :------------------------------------ |
-|          0 | Int             | Number of dimensions                  |
-|       1..4 | ParticleSpecies | Species of particles in list          |
-|          4 | Int             | Number of particles                   |
+|          0 | UInt            | Number of dimensions                  |
+|          1 | UInt            | Number of particles                   |
+|       2..5 | ParticleSpecies | Species of particles in list          |
 |        5.. | Floats          | All positions and then all velocities |
